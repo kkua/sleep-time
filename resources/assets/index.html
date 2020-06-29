@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html window-icon="icon.ico">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>早点睡觉</title>
+  <link rel="stylesheet" type="text/css" href="css/index.css">
+  <script src="script/main.tis" type="text/tiscript"></script>
+  <include src="tray.html"/>
+</head>
+<include src="menubar.html" />
+<body>
+<div>
+  <label>设置关机时间:</label>
+  <input type="integer" id="hour" min=0 max=23 value=0 step=1/><label>时</label><input id="minute" type="integer" min=0 max=59 value=0 step=1><label>分</label>
+  <button#set_shutdown>更改关机时间</button>
+</div>
+
+</body>
+<script type="text/tiscript">
+  $(#set_shutdown).onClick = function () {
+    view.set_shutdown($(#hour).value, $(#minute).value);
+  }
+</script>
+</html>

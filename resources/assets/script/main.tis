@@ -1,0 +1,24 @@
+function updateShutdownTime(time) {
+    let tips = "早点睡觉提醒：计算机将于" + time + "关闭";
+    view.trayIcon{text: tips};
+}
+
+function notice(notice) {
+    view.msgbox {
+        type:#information,
+        title:"通知：该睡了",
+        content:notice,
+        buttons: [{id: #ok, text: "我知道了"}],
+        
+        onLoad: function(root) {
+            root.timer(3000, function() {
+                    root.view.close(null);
+            });
+        },
+        onClose: function(root, id) {
+            root.timer(0, function() {
+                stdout.println("closing dialog");
+            });
+        },
+    };
+}
