@@ -1,5 +1,2 @@
-// https://docs.microsoft.com/zh-cn/windows/win32/menurc/about-resource-files
-#include <winuser.h>
-
 1 ICON "assets/icon.ico"
 1 RT_MANIFEST "app.manifest"
