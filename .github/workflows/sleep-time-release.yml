@@ -18,3 +18,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build Release
       run: cargo build --release --verbose
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/sleep-time.exe
+        asset_name: sleep-time.exe
+        tag: latest
+        overwrite: true
