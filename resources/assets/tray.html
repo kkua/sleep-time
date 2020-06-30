@@ -14,7 +14,11 @@
           toggleMainWindow();
         } else if (evt.buttons == 2) {
           var (sx, sy) = view.box(#position,#client,#screen);
+          view.windowTopmost = true;
           self.popup($(menu#tray), 2, evt.x - sx, evt.y - sy);
+          self.on("popupdismissing", "menu#tray", function(evt) {
+            view.windowTopmost = false;
+          });
         }  
       });
     }
