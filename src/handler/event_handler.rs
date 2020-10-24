@@ -8,12 +8,9 @@ pub struct EventHandler {
     timer_data: Arc<Mutex<ShutdownTimerData>>,
 }
 
-#[deprecated = "reason"]
-struct Settings {
-    hour: u8,
-    minute: u8,
-    autorun: bool,
-}
+pub const MIN_RUNNING_SECONDS: i64 = 3 * 60;
+
+pub const NOTICE_AHEAD_SECONDS: i64 = 30;
 
 #[derive(Debug)]
 struct ShutdownTimerData {
@@ -23,6 +20,7 @@ struct ShutdownTimerData {
     notified: bool,
     recalc: bool,
     shutdown_time_str: String,
+    reset_timer: bool,
 }
 
 impl ShutdownTimerData {
@@ -34,20 +32,24 @@ impl ShutdownTimerData {
             notified: false,
             recalc: false,
             shutdown_time_str: String::new(),
+            reset_timer: true,
         };
         data.update_timestamp(Local::now());
         data
     }
 
-    fn calc_timestamp(now: DateTime<Local>, hour: u8, minute: u8) -> Option<DateTime<Local>> {
+    fn calc_timestamp(
+        now: DateTime<Local>,
+        hour: u8,
+        minute: u8,
+        reset: bool,
+    ) -> Option<DateTime<Local>> {
         let today = now.date().naive_local();
         let mut datetime = today.and_hms(hour as u32, minute as u32, 59);
-        if now
-            .naive_local()
-            .signed_duration_since(datetime)
-            .num_seconds()
-            > 0
-        {
+        let remaind_seconds = datetime
+            .signed_duration_since(now.naive_local())
+            .num_seconds();
+        if remaind_seconds < 0 || (reset && remaind_seconds < MIN_RUNNING_SECONDS) {
             datetime = datetime
                 .checked_add_signed(chrono::Duration::days(1))
                 .unwrap();
@@ -56,12 +58,17 @@ impl ShutdownTimerData {
     }
 
     fn update_timestamp(&mut self, now: DateTime<Local>) -> bool {
-        if self.recalc || now.timestamp() > self.shutdown_time {
-            let datetime =
-                ShutdownTimerData::calc_timestamp(now, self.shutdown_hour, self.shutdown_minute)
-                    .unwrap();
+        if self.reset_timer || self.recalc || now.timestamp() > self.shutdown_time {
+            let datetime = ShutdownTimerData::calc_timestamp(
+                now,
+                self.shutdown_hour,
+                self.shutdown_minute,
+                self.reset_timer,
+            )
+            .unwrap();
             let timestamp = datetime.timestamp();
             self.recalc = false;
+            self.reset_timer = false;
             if self.shutdown_time != timestamp {
                 self.shutdown_time = timestamp;
                 self.shutdown_time_str = datetime.format("%m-%d %H:%M:%S").to_string();
@@ -102,13 +109,17 @@ impl EventHandler {
                 let timer_data = &mut lock_result.unwrap();
                 let now_timestamp = now.timestamp();
                 let shutdown_count_down = timer_data.shutdown_time - now_timestamp;
-                if shutdown_count_down < 30 && !timer_data.notified {
+                if shutdown_count_down < NOTICE_AHEAD_SECONDS && !timer_data.notified {
                     // 通知
-                    let _ = root_elem.call_function("notice", &make_args!("计算机将在30秒后关闭"));
+                    let _ = root_elem.call_function(
+                        "notice",
+                        &make_args!(format!("计算机将在{}秒后关闭", NOTICE_AHEAD_SECONDS)),
+                    );
                     timer_data.notified = true;
                     continue;
                 }
                 if shutdown_count_down <= 0 {
+                    timer_data.reset_timer = true;
                     println!("shutdwon system");
                     service::shutdown_system();
                 }
