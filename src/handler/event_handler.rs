@@ -146,7 +146,8 @@ impl EventHandler {
 
     fn autorun_when_boot(&mut self, enable: bool) -> Value {
         if enable {
-            service::enable_autorun();
+            let is_ok = service::enable_autorun();
+            println!("set autorun: {}", is_ok);
         } else {
             service::cancel_autorun();
         }
