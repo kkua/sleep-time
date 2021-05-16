@@ -118,11 +118,6 @@ impl EventHandler {
                     timer_data.notified = true;
                     continue;
                 }
-                if shutdown_count_down <= 0 {
-                    timer_data.reset_timer = true;
-                    println!("shutdwon system");
-                    service::shutdown_system();
-                }
                 println!("{} {}", now_timestamp, shutdown_count_down);
                 if timer_data.update_timestamp(now) {
                     let _ = root_elem.call_function(
@@ -130,6 +125,11 @@ impl EventHandler {
                         &make_args!(timer_data.shutdown_time_str.clone()),
                     );
                     continue;
+                }
+                if shutdown_count_down <= 0 {
+                    timer_data.reset_timer = true;
+                    println!("shutdwon system");
+                    service::shutdown_system();
                 }
             }
             sleep(std::time::Duration::from_millis(3000));
