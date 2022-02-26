@@ -23,3 +23,6 @@ cc = "1.0"
 [profile.release]
 panic = "abort"
 lto = true
+
+[features]
+npm = []
