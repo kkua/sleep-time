@@ -31,7 +31,7 @@ fn init_sciter() {
 
 fn main() {
     init_sciter();
-    let index_html = assets::get("index.html").unwrap();
+    let index_html = assets::get("index.html").unwrap().data;
     let mut frame = sciter::Window::new();
     let host_handler = handler::HostHandler::new(&frame);
     let event_handler = handler::EventHandler::new();

@@ -5,6 +5,6 @@ use std::borrow::Cow;
 pub struct Assets;
 
 #[inline]
-pub fn get(filename: &str) -> Option<Cow<'static, [u8]>> {
+pub fn get(filename: &str) -> Option<rust_embed::EmbeddedFile> {
     Assets::get(filename)
 }

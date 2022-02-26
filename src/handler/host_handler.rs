@@ -23,9 +23,12 @@ impl sciter::HostHandler for HostHandler {
         println!("req {}", uri);
         let ui_scheme = crate::conf::UI_SCHEME;
         if uri.starts_with(ui_scheme) {
-            let data = assets::get(&uri[ui_scheme.len()..]).unwrap();
-            self.data_ready(pnm.hwnd, &uri, &data, None);
-            Some(LOAD_RESULT::LOAD_DEFAULT)
+            if let Some(file) = assets::get(&uri[ui_scheme.len()..]) {
+                self.data_ready(pnm.hwnd, &uri, &file.data, None);
+                Some(LOAD_RESULT::LOAD_DEFAULT)
+            } else {
+                None
+            }
         } else {
             None
         }

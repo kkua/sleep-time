@@ -7,11 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sciter-rs = "0.5.56"
-rust-embed = "5.9.0"
+sciter-rs = "0.5.58"
+rust-embed = "6.3.0"
 anyhow = "1.0.40"
 chrono = "0.4.19"
-dirs = "3.0.2"
+dirs = "4.0.0"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["errhandlingapi", "powrprof", "processthreadsapi", "reason", "securitybaseapi", "winbase", "winerror", "winnt", "winuser","objidl","shobjidl_core","objbase"]}
@@ -23,3 +23,6 @@ cc = "1.0"
 [profile.release]
 panic = "abort"
 lto = true
+
+[features]
+npm = []
