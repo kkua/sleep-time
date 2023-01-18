@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use anyhow::Result as ServiceResult;
 use winapi::um::{
     errhandlingapi, powrprof, processthreadsapi, securitybaseapi, winbase, winnt, winuser,
@@ -30,7 +31,7 @@ fn win32_string(value: &str) -> Vec<u16> {
 fn aquire_shutdown_privilege() -> ServiceResult<()> {
     const WIN_BOOL_FALSE: winapi::shared::minwindef::BOOL = 0;
     unsafe {
-        let mut token_handle: winnt::HANDLE = std::mem::MaybeUninit::uninit().assume_init();
+        let mut token_handle: winnt::HANDLE = std::mem::MaybeUninit::zeroed().assume_init();
         let mut tkp: winnt::TOKEN_PRIVILEGES = std::mem::MaybeUninit::zeroed().assume_init();
         if processthreadsapi::OpenProcessToken(
             processthreadsapi::GetCurrentProcess(),

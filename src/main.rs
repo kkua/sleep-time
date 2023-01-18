@@ -1,42 +1,59 @@
-// #![cfg_attr(feature = "no-console", windows_subsystem = "windows")]
-#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+#![cfg_attr(
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
+)]
 
-#[macro_use]
-extern crate sciter;
-#[macro_use]
-extern crate anyhow;
-
-mod assets;
-mod conf;
-mod handler;
+use once_cell::sync::OnceCell;
+use serde_json::Value;
+use service::TimerHandler;
 mod service;
+mod tray;
 
-#[inline]
-fn init_sciter() {
-    sciter::set_options(sciter::RuntimeOptions::ScriptFeatures(
-        sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SYSINFO as u8		// Enables `Sciter.machineName()`
-            | sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_FILE_IO as u8 // Enables opening file dialog (`view.selectFile()`)
-            | sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SOCKET_IO as u8,
-    ))
-    .unwrap();
-    sciter::set_options(sciter::RuntimeOptions::InitScript(
-        conf::SCITER_GLOBAL_SCRIPT,
-    ))
-    .unwrap();
-
-    #[cfg(debug_assertions)]
-    // Enable debug mode for all windows, so that we can inspect them via Inspector.
-    sciter::set_options(sciter::RuntimeOptions::DebugMode(true)).unwrap();
-}
+static TIMER: OnceCell<TimerHandler> = OnceCell::new();
 
 fn main() {
-    init_sciter();
-    let index_html = assets::get("index.html").unwrap().data;
-    let mut frame = sciter::Window::new();
-    let host_handler = handler::HostHandler::new(&frame);
-    let event_handler = handler::EventHandler::new();
-    frame.sciter_handler(host_handler);
-    frame.event_handler(event_handler);
-    frame.load_html(&index_html, Some(conf::UI_SCHEME));
-    frame.run_loop();
+    let _ = TIMER.set(TimerHandler::new());
+    TIMER.get().expect("定时器未初始化！！！").start_timer();
+
+    let tray = tray::create_tray_menu();
+    tauri::Builder::default()
+        .system_tray(tray)
+        .on_system_tray_event(tray::tray_event_handle)
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                // hide window whenever it loses focus
+                // if !focused {
+                // }
+                api.prevent_close();
+                event.window().hide().unwrap();
+            }
+        })
+        .invoke_handler(tauri::generate_handler![
+            get_settings,
+            set_shutdown,
+            toggle_autorun
+        ])
+        // .build(tauri::generate_context!())
+        .run(tauri::generate_context!())
+        .expect("error while building tauri application");
+}
+
+#[tauri::command]
+fn get_settings() -> Value {
+    println!("call");
+    TIMER.get().unwrap().get_settings()
+}
+
+#[tauri::command]
+fn set_shutdown(hour: i32, minute: i32) {
+    TIMER.get().unwrap().set_shutdown(hour, minute);
+}
+
+#[tauri::command]
+fn toggle_autorun(enable: bool) {
+    if enable {
+        service::enable_autorun();
+    } else {
+        service::cancel_autorun();
+    }
 }

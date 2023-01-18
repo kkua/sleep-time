@@ -1,0 +1,68 @@
+{
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "npm run build",
+    "devPath": "./ui/dist",
+    "distDir": "./ui/dist"
+  },
+  "package": {
+    "productName": "sleep-time",
+    "version": "0.2.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/icon.ico"
+      ],
+      "identifier": "dev.cay.sleep-time",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "msi",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "早点睡觉",
+        "center":true,
+        "width": 480,
+        "height": 320,
+        "minWidth": 480,
+        "minHeight":320
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true
+    }
+  }
+}
