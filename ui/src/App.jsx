@@ -37,7 +37,7 @@ function App() {
           <i class="form-icon"></i>开机自启动
         </label>
       </div>
-      <div class={styles.row}>下次关机时间：{settings().shutdownTime}
+      <div>下次关机时间：{settings().shutdownTime}
       </div>
 
       <div>

@@ -17,11 +17,16 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build Release
       run: cargo build --release --verbose
+    - name: zip
+      uses: papeloto/action-zip@v1
+      with:
+          files: target/release/sleep-time.exe
+          dest: sleep-time.zip
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/release/sleep-time.exe
-        asset_name: sleep-time.exe
+        file: sleep-time.zip
+        asset_name: sleep-time.zip
         tag: ${{ github.ref }}
         overwrite: true
