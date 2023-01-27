@@ -3,7 +3,7 @@ use tauri::{
     SystemTrayMenuItem,
 };
 
-type TrayEventHandler = fn(app: &AppHandle, event: SystemTrayEvent) -> (bool, SystemTrayEvent);
+type TrayEventHandler = fn(app: &AppHandle, event: &SystemTrayEvent) -> bool;
 
 const EXIT_MENU_ID: &str = &"quit";
 const SETTING_MENU_ID: &str = &"settings";
@@ -21,17 +21,14 @@ pub fn create_tray_menu() -> SystemTray {
 }
 
 pub fn tray_event_handle(app: &AppHandle, event: SystemTrayEvent) {
-    let mut event = event;
     for on_event in TRAY_EVENT_HANDLERS {
-        let (is_ok, e) = on_event(app, event);
-        event = e;
-        if is_ok {
+        if on_event(app, &event) {
             break;
         }
     }
 }
 
-fn on_toggle_window(app: &AppHandle, event: SystemTrayEvent) -> (bool, SystemTrayEvent) {
+fn on_toggle_window(app: &AppHandle, event: &SystemTrayEvent) -> bool {
     if let SystemTrayEvent::LeftClick { .. } = event {
         app.get_window("main").and_then(|win| {
             if win.is_visible().unwrap_or(false) {
@@ -42,34 +39,34 @@ fn on_toggle_window(app: &AppHandle, event: SystemTrayEvent) -> (bool, SystemTra
             }
             Some(win)
         });
-        return (true, event);
+        return true;
     }
-    (false, event)
+    false
 }
 
 fn is_tray_item_click(event: &SystemTrayEvent, menu_id: &str) -> bool {
-    if let SystemTrayEvent::MenuItemClick { id, .. } = event {
+    if let SystemTrayEvent::MenuItemClick { ref id, .. } = event {
         return menu_id.eq(id);
     }
     false
 }
 
-fn exit(app: &AppHandle, event: SystemTrayEvent) -> (bool, SystemTrayEvent) {
+fn exit(app: &AppHandle, event: &SystemTrayEvent) -> bool {
     if is_tray_item_click(&event, EXIT_MENU_ID) {
         app.exit(0);
-        return (true, event);
+        return true;
     }
-    (false, event)
+    false
 }
 
-fn show_window(app: &AppHandle, event: SystemTrayEvent) -> (bool, SystemTrayEvent) {
-    if is_tray_item_click(&event, SETTING_MENU_ID) {
+fn show_window(app: &AppHandle, event: &SystemTrayEvent) -> bool {
+    if is_tray_item_click(event, SETTING_MENU_ID) {
         app.get_window("main").and_then(|win| {
             let _ = win.show();
             let _ = win.set_focus();
             Some(win)
         });
-        return (true, event);
+        return true;
     }
-    (false, event)
+    false
 }

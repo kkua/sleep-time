@@ -6,6 +6,7 @@
 use once_cell::sync::OnceCell;
 use serde_json::Value;
 use service::TimerHandler;
+use tauri::Manager;
 mod service;
 mod tray;
 
@@ -17,6 +18,7 @@ fn main() {
 
     let tray = tray::create_tray_menu();
     tauri::Builder::default()
+        .setup(setup)
         .system_tray(tray)
         .on_system_tray_event(tray::tray_event_handle)
         .on_window_event(|event| {
@@ -31,7 +33,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_settings,
             set_shutdown,
-            toggle_autorun
+            toggle_autorun,
         ])
         // .build(tauri::generate_context!())
         .run(tauri::generate_context!())
@@ -40,7 +42,6 @@ fn main() {
 
 #[tauri::command]
 fn get_settings() -> Value {
-    println!("call");
     TIMER.get().unwrap().get_settings()
 }
 
@@ -56,4 +57,9 @@ fn toggle_autorun(enable: bool) {
     } else {
         service::cancel_autorun();
     }
+}
+
+fn setup(app: &mut tauri::App) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    TIMER.get().unwrap().init_app(app.app_handle());
+    Ok(())
 }

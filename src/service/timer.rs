@@ -2,14 +2,19 @@ use crate::service;
 use chrono::offset::TimeZone;
 use chrono::{DateTime, Local};
 use serde_json::{json, Value};
-use std::sync::{Arc, Mutex};
+
+use std::sync::{Arc, Mutex, RwLock};
+use tauri::{AppHandle, Manager};
 pub struct TimerHandler {
     timer_data: Arc<Mutex<ShutdownTimerData>>,
+    app: Arc<RwLock<Option<tauri::AppHandle>>>,
 }
 
 pub const MIN_RUNNING_SECONDS: i64 = 3 * 60;
 
 pub const NOTICE_AHEAD_SECONDS: i64 = 30;
+
+pub const TIMER_EVENT_WILL_SHUTDOWN: &str = "will-shutdown";
 
 #[derive(Debug)]
 struct ShutdownTimerData {
@@ -85,6 +90,7 @@ impl ShutdownTimerData {
         self.shutdown_hour = hour;
         self.shutdown_minute = minute;
         self.recalc = true;
+        self.notified = false;
     }
 }
 
@@ -92,13 +98,14 @@ impl TimerHandler {
     pub fn new() -> Self {
         return TimerHandler {
             timer_data: Arc::new(Mutex::new(ShutdownTimerData::new(0, 0))),
+            app: Arc::new(RwLock::new(None)),
         };
     }
 
     pub fn start_timer(&self) {
         use std::thread::{sleep, spawn};
         let timer_data = self.timer_data.clone();
-
+        let app = self.app.clone();
         spawn(move || loop {
             let now = Local::now();
             {
@@ -112,6 +119,8 @@ impl TimerHandler {
                 let shutdown_count_down = timer_data.shutdown_time - now_timestamp;
                 if shutdown_count_down < NOTICE_AHEAD_SECONDS && !timer_data.notified {
                     // 通知
+                    println!("publish event : {}", TIMER_EVENT_WILL_SHUTDOWN);
+                    Self::emit_event(app.read().unwrap().as_ref(), TIMER_EVENT_WILL_SHUTDOWN);
                     timer_data.notified = true;
                     continue;
                 }
@@ -136,6 +145,16 @@ impl TimerHandler {
             .expect("failed to get lock of timer_data");
         data.set_shutdown(hour as u8, minute as u8);
         data.update_timestamp(Local::now());
+    }
+
+    pub fn init_app(&self, app_handle: AppHandle) {
+        let _ = self.app.write().unwrap().insert(app_handle);
+    }
+
+    fn emit_event(app: Option<&AppHandle>, event_name: &str) {
+        if let Some(ref app) = app {
+            let _ = app.emit_all(event_name, "");
+        }
     }
 
     pub fn get_settings(&self) -> Value {

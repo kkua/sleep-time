@@ -11,7 +11,15 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "dialog": {
+        "all": true,
+        "open": true,
+        "save": true
+      },
+      "notification": {
+        "all": true
+      }
     },
     "bundle": {
       "active": true,
@@ -52,12 +60,13 @@
       {
         "fullscreen": false,
         "resizable": true,
+        "visible" : false,
         "title": "早点睡觉",
-        "center":true,
+        "center": true,
         "width": 480,
         "height": 320,
         "minWidth": 480,
-        "minHeight":320
+        "minHeight": 320
       }
     ],
     "systemTray": {

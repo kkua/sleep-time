@@ -1,7 +1,9 @@
 import styles from './App.module.css';
-import { createEffect, createSignal } from 'solid-js';
+import { createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import TimeSection from './TimeSection';
-import { invoke } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/tauri';
+import {listen} from '@tauri-apps/api/event';
+import { message } from '@tauri-apps/api/dialog';
 
 function App() {
   let getHour;
@@ -9,6 +11,13 @@ function App() {
   let [settings, setSettings] = createSignal({
     autorun: false,
     shutdownTime: "加载中",
+  });
+
+
+  onMount( () => {
+    listen('will-shutdown', async (event) => {
+      await message('该睡了，此计算机将于30秒后关机！！！', { title: '早点睡觉', type: 'warning' });
+    })
   });
 
   function getSettings() {
