@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use tauri::{AppHandle, Manager};
 pub struct TimerHandler {
     timer_data: Arc<Mutex<ShutdownTimerData>>,
-    app: Arc<RwLock<Option<tauri::AppHandle>>>,
+    pub app: Arc<RwLock<Option<tauri::AppHandle>>>,
 }
 
 pub const MIN_RUNNING_SECONDS: i64 = 3 * 60;
@@ -130,7 +130,6 @@ impl TimerHandler {
                 }
                 if shutdown_count_down <= 0 {
                     timer_data.reset_timer = true;
-                    println!("shutdwon system");
                     service::shutdown_system();
                 }
             }
@@ -147,12 +146,8 @@ impl TimerHandler {
         data.update_timestamp(Local::now());
     }
 
-    pub fn init_app(&self, app_handle: AppHandle) {
-        let _ = self.app.write().unwrap().insert(app_handle);
-    }
-
     fn emit_event(app: Option<&AppHandle>, event_name: &str) {
-        if let Some(ref app) = app {
+        if let Some(app) = app {
             let _ = app.emit_all(event_name, "");
         }
     }

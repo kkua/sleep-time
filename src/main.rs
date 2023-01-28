@@ -6,15 +6,13 @@
 use once_cell::sync::OnceCell;
 use serde_json::Value;
 use service::TimerHandler;
-use tauri::Manager;
 mod service;
 mod tray;
 
 static TIMER: OnceCell<TimerHandler> = OnceCell::new();
 
 fn main() {
-    let _ = TIMER.set(TimerHandler::new());
-    TIMER.get().expect("定时器未初始化！！！").start_timer();
+    let _ = TIMER.get_or_init(TimerHandler::new).start_timer();
 
     let tray = tray::create_tray_menu();
     tauri::Builder::default()
@@ -23,9 +21,6 @@ fn main() {
         .on_system_tray_event(tray::tray_event_handle)
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
-                // hide window whenever it loses focus
-                // if !focused {
-                // }
                 api.prevent_close();
                 event.window().hide().unwrap();
             }
@@ -60,6 +55,12 @@ fn toggle_autorun(enable: bool) {
 }
 
 fn setup(app: &mut tauri::App) -> std::result::Result<(), Box<dyn std::error::Error>> {
-    TIMER.get().unwrap().init_app(app.app_handle());
+    let _ = TIMER
+        .get()
+        .expect("定时器未初始化！！！")
+        .app
+        .write()
+        .expect("无法获得写锁！！！")
+        .insert(app.handle());
     Ok(())
 }
