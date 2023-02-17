@@ -3,6 +3,8 @@
     windows_subsystem = "windows"
 )]
 
+#![allow(clippy::needless_return)]
+
 use once_cell::sync::OnceCell;
 use serde_json::Value;
 use service::TimerHandler;
@@ -12,7 +14,7 @@ mod tray;
 static TIMER: OnceCell<TimerHandler> = OnceCell::new();
 
 fn main() {
-    let _ = TIMER.get_or_init(TimerHandler::new).start_timer();
+    TIMER.get_or_init(TimerHandler::new).start_timer();
 
     let tray = tray::create_tray_menu();
     tauri::Builder::default()

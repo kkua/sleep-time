@@ -4,8 +4,8 @@ import 'spectre.css/src/spectre.scss';
 import 'spectre.css/src/spectre-icons.scss';
 import './index.css';
 import App from './App';
-import { onMount } from 'solid-js';
-
+import Dialog from './Dialog';
+import { Router, Route, Routes } from "@solidjs/router";
 
 if (window.location.hostname == 'tauri.localhost') {
     document.addEventListener('contextmenu', e => {
@@ -19,5 +19,14 @@ if (window.location.hostname == 'tauri.localhost') {
     }, { capture: true })
 }
 
-render(() => <App />, document.getElementById('root'));
+render(
+    () => (
+        <Router>
+            <Routes>
+                <Route path="/" component={App} />
+                <Route path="/dialog" component={Dialog} />
+            </Routes>
+        </Router>
+    ),
+    document.getElementById('root'));
 

@@ -150,7 +150,7 @@ fn get_link_file_path() -> Option<std::path::PathBuf> {
 
 pub fn cancel_autorun() {
     if let Some(path) = get_link_file_path() {
-        if let Err(_) = std::fs::remove_file(path) {
+        if std::fs::remove_file(path).is_err() {
             println!("Failed to remove link file.");
         }
     }

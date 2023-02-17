@@ -5,9 +5,9 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
 import { message } from '@tauri-apps/api/dialog';
 import { appWindow } from '@tauri-apps/api/window';
-
 function App() {
   let clockInterval;
+  let unlisten;
   let getHour;
   let getMinute;
   let [settings, setSettings] = createSignal({
@@ -24,7 +24,7 @@ function App() {
     clockInterval = setInterval(() => {
       setClock(new Date());
     }, 1000);
-    listen('will-shutdown', (event) => {
+    unlisten = listen('will-shutdown', (event) => {
       alertShutdown();
     });
   });
@@ -32,6 +32,7 @@ function App() {
 
   onCleanup(() => {
     clearInterval(clockInterval);
+    unlisten.then(f => f());
   })
 
   async function alertShutdown() {
@@ -40,6 +41,7 @@ function App() {
     await appWindow.setFocus();
     await message('该睡了，此计算机将于30秒后关机！！！', { title: '早点睡觉', type: 'warning' });
     await appWindow.setFullscreen(false);
+    getSettings();
   }
 
   function getSettings() {
