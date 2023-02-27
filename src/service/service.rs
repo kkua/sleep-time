@@ -39,10 +39,8 @@ fn aquire_shutdown_privilege() -> ServiceResult<()> {
             &mut token_handle,
         ) == WIN_BOOL_FALSE
         {
-            drop(token_handle);
-            drop(tkp);
             return Err(anyhow!(
-                "Failed to OpenProcessToken. code: {}",
+                "Failed to OpenProcessToken. Error code: {}",
                 errhandlingapi::GetLastError()
             ));
         }
@@ -65,15 +63,11 @@ fn aquire_shutdown_privilege() -> ServiceResult<()> {
             &mut 0,
         ) == WIN_BOOL_FALSE
         {
-            drop(token_handle);
-            drop(tkp);
             return Err(anyhow!(
-                "Failed to AdjustTokenPrivileges. code: {}",
+                "Failed to AdjustTokenPrivileges. Error code: {}",
                 errhandlingapi::GetLastError()
             ));
         }
-        drop(token_handle);
-        drop(tkp);
         return Ok(());
     }
 }
@@ -140,7 +134,6 @@ fn create_shortcut(src_path: &str, dst_path: &str) -> bool {
 fn get_link_file_path() -> Option<std::path::PathBuf> {
     let mut appdata_dir = dirs::config_dir().unwrap();
     appdata_dir.push(LINK_FILE_PATH);
-    println!("{}", appdata_dir.to_str().unwrap());
     if appdata_dir.exists() {
         Some(appdata_dir)
     } else {

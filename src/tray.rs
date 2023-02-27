@@ -21,11 +21,9 @@ pub fn create_tray_menu() -> SystemTray {
 }
 
 pub fn tray_event_handle(app: &AppHandle, event: SystemTrayEvent) {
-    for on_event in TRAY_EVENT_HANDLERS {
-        if on_event(app, &event) {
-            break;
-        }
-    }
+    TRAY_EVENT_HANDLERS
+        .iter()
+        .any(|on_event| on_event(app, &event));
 }
 
 fn on_toggle_window(app: &AppHandle, event: &SystemTrayEvent) -> bool {

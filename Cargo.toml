@@ -1,8 +1,8 @@
 [package]
 name = "sleep-time"
-version = "0.2.1"
+version = "0.2.3"
 description = "定时休眠系统"
-authors = ["Cay <kk-pub@outlook.com>"]
+authors = ["Kaay <kk-pub@outlook.com>"]
 license = "MIT"
 repository = "https://github.com/kkua/sleep-time"
 default-run = "sleep-time"
